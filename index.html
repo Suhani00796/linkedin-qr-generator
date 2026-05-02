@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>QR Code Generator</title>
-    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' fill='%232563eb'/><rect x='10' y='10' width='30' height='30' fill='%23fff'/><rect x='60' y='10' width='30' height='30' fill='%23fff'/><rect x='10' y='60' width='30' height='30' fill='%23fff'/><rect x='35' y='35' width='30' height='30' fill='%23fff' opacity='0.5'/></svg>">
+    <link rel="icon" type="image/svg+xml" id="favicon">
     <style>
         * {
             margin: 0;
@@ -26,7 +26,7 @@
             background: white;
             border-radius: 20px;
             box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
-            max-width: 500px;
+            max-width: 550px;
             width: 100%;
             overflow: hidden;
         }
@@ -66,7 +66,8 @@
         }
 
         input[type="text"],
-        input[type="file"] {
+        input[type="file"],
+        input[type="color"] {
             width: 100%;
             padding: 12px 15px;
             border: 2px solid #e0e0e0;
@@ -77,10 +78,17 @@
         }
 
         input[type="text"]:focus,
-        input[type="file"]:focus {
+        input[type="file"]:focus,
+        input[type="color"]:focus {
             outline: none;
             border-color: #667eea;
             box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        input[type="color"] {
+            height: 50px;
+            padding: 5px;
+            cursor: pointer;
         }
 
         input[type="file"] {
@@ -97,6 +105,41 @@
             cursor: pointer;
             font-weight: 600;
             margin-right: 10px;
+        }
+
+        .color-group {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+
+        .color-item {
+            text-align: center;
+        }
+
+        .color-item label {
+            margin-bottom: 8px;
+        }
+
+        .paste-area {
+            border: 2px dashed #667eea;
+            border-radius: 10px;
+            padding: 20px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            background: #f8f9ff;
+            margin-bottom: 10px;
+        }
+
+        .paste-area:hover {
+            background: #f0f2ff;
+            border-color: #764ba2;
+        }
+
+        .paste-area.dragover {
+            background: #e8ebff;
+            border-color: #764ba2;
         }
 
         button {
@@ -122,9 +165,14 @@
             transform: translateY(0);
         }
 
+        button:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
         #result {
             margin-top: 30px;
-            text-align: center;
         }
 
         .result-box {
@@ -153,7 +201,7 @@
         }
 
         .result-box img {
-            max-width: 250px;
+            max-width: 280px;
             height: auto;
             border-radius: 10px;
             margin: 20px 0;
@@ -170,7 +218,7 @@
             border-radius: 8px;
             transition: all 0.3s ease;
             word-break: break-all;
-            font-size: 0.9em;
+            font-size: 0.85em;
         }
 
         .result-box a:hover {
@@ -184,6 +232,15 @@
             padding: 12px 15px;
             border-radius: 8px;
             border-left: 4px solid #c33;
+            margin-bottom: 15px;
+        }
+
+        .success {
+            background: #efe;
+            color: #3c3;
+            padding: 12px 15px;
+            border-radius: 8px;
+            border-left: 4px solid #3c3;
             margin-bottom: 15px;
         }
 
@@ -212,53 +269,149 @@
             color: #999;
             margin-top: 5px;
         }
+
+        .preview-image {
+            max-width: 100%;
+            max-height: 100px;
+            border-radius: 8px;
+            margin-top: 10px;
+        }
     </style>
 </head>
 <body>
     <div class="container">
         <div class="header">
             <h1>🎯 QR Generator</h1>
-            <p>Create shareable QR codes for your domains</p>
+            <p>Create shareable QR codes for your certificates</p>
         </div>
 
         <div class="content">
             <div class="form-group">
                 <label for="domain">Domain Name</label>
-                <input type="text" id="domain" placeholder="e.g. google.com, campusweb.com, youtube.com">
-                <div class="hint">Enter just the domain name without https://</div>
+                <input type="text" id="domain" placeholder="e.g. www.google.com, campusweb.com">
+                <div class="hint">Enter domain name with or without www (e.g., www.google.com or google.com)</div>
             </div>
 
             <div class="form-group">
-                <label for="certFile">Upload Image/Certificate</label>
-                <input type="file" id="certFile" accept="image/*">
+                <label>Favicon Color</label>
+                <div class="color-group">
+                    <div class="color-item">
+                        <label for="faviconBg">Background</label>
+                        <input type="color" id="faviconBg" value="#2563eb">
+                    </div>
+                    <div class="color-item">
+                        <label for="faviconColor">Pattern</label>
+                        <input type="color" id="faviconColor" value="#ffffff">
+                    </div>
+                </div>
+                <div class="hint">Customize favicon colors for your brand</div>
             </div>
 
-            <button onclick="generate()">Generate QR Code</button>
+            <div class="form-group">
+                <label>Upload Certificate Image</label>
+                <div class="paste-area" id="pasteArea">
+                    <p>📸 Click or paste screenshot here</p>
+                    <small>You can paste from clipboard (Ctrl+V / Cmd+V)</small>
+                </div>
+                <input type="file" id="certFile" accept="image/*" style="display:none;">
+                <div id="preview"></div>
+            </div>
+
+            <button onclick="generate()" id="generateBtn">Generate QR Code</button>
 
             <div id="result"></div>
         </div>
     </div>
 
     <script>
+        // Set favicon dynamically
+        function updateFavicon() {
+            const bg = document.getElementById('faviconBg').value;
+            const color = document.getElementById('faviconColor').value;
+            const svg = `data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' fill='${encodeURIComponent(bg)}'/><rect x='10' y='10' width='30' height='30' fill='${encodeURIComponent(color)}'/><rect x='60' y='10' width='30' height='30' fill='${encodeURIComponent(color)}'/><rect x='10' y='60' width='30' height='30' fill='${encodeURIComponent(color)}'/><rect x='35' y='35' width='30' height='30' fill='${encodeURIComponent(color)}' opacity='0.5'/></svg>`;
+            document.getElementById('favicon').href = svg;
+        }
+
+        document.getElementById('faviconBg').addEventListener('change', updateFavicon);
+        document.getElementById('faviconColor').addEventListener('change', updateFavicon);
+
+        // Paste area functionality
+        const pasteArea = document.getElementById('pasteArea');
+        const certFile = document.getElementById('certFile');
+
+        pasteArea.addEventListener('click', () => certFile.click());
+
+        pasteArea.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            pasteArea.classList.add('dragover');
+        });
+
+        pasteArea.addEventListener('dragleave', () => {
+            pasteArea.classList.remove('dragover');
+        });
+
+        pasteArea.addEventListener('drop', (e) => {
+            e.preventDefault();
+            pasteArea.classList.remove('dragover');
+            const files = e.dataTransfer.files;
+            if (files.length > 0) {
+                certFile.files = files;
+                showPreview(files[0]);
+            }
+        });
+
+        // Paste from clipboard
+        document.addEventListener('paste', (e) => {
+            const items = e.clipboardData.items;
+            for (let item of items) {
+                if (item.type.startsWith('image/')) {
+                    const file = item.getAsFile();
+                    const dataTransfer = new DataTransfer();
+                    dataTransfer.items.add(file);
+                    certFile.files = dataTransfer.files;
+                    showPreview(file);
+                }
+            }
+        });
+
+        certFile.addEventListener('change', (e) => {
+            if (e.target.files.length > 0) {
+                showPreview(e.target.files[0]);
+            }
+        });
+
+        function showPreview(file) {
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                document.getElementById('preview').innerHTML = `<img src="${e.target.result}" class="preview-image" alt="Preview">`;
+            };
+            reader.readAsDataURL(file);
+        }
+
+        // Initial favicon setup
+        updateFavicon();
+
         async function generate() {
             const domain = document.getElementById('domain').value.trim();
-            const fileInput = document.getElementById('certFile');
+            const certFile = document.getElementById('certFile');
             const resultDiv = document.getElementById('result');
+            const generateBtn = document.getElementById('generateBtn');
             
             if (!domain) {
                 resultDiv.innerHTML = '<div class="error">❌ Please enter a domain name</div>';
                 return;
             }
 
-            if (!fileInput.files[0]) {
+            if (!certFile.files[0]) {
                 resultDiv.innerHTML = '<div class="error">❌ Please upload an image or certificate</div>';
                 return;
             }
 
             resultDiv.innerHTML = '<div class="loading"><div class="spinner"></div><p>Generating QR Code...</p></div>';
+            generateBtn.disabled = true;
 
             const formData = new FormData();
-            formData.append('certificate', fileInput.files[0]);
+            formData.append('certificate', certFile.files[0]);
             formData.append('domain', domain);
 
             try {
@@ -267,19 +420,26 @@
                     body: formData
                 });
 
-                if (!response.ok) throw new Error('Server error');
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.error || 'Server error');
+                }
 
                 const data = await response.json();
                 resultDiv.innerHTML = `
                     <div class="result-box">
-                        <p>✅ QR Code Generated Successfully!</p>
+                        <p class="success">✅ QR Code Generated Successfully!</p>
                         <img src="${data.qrCodeUrl}" alt="Generated QR Code">
                         <p><strong>Verification Link:</strong></p>
                         <a href="${data.verificationUrl}" target="_blank">${data.verificationUrl}</a>
+                        <p style="margin-top: 15px; font-size: 0.85em; color: #666;">Share this QR code or link to verify the certificate</p>
                     </div>
                 `;
             } catch (error) {
-                resultDiv.innerHTML = '<div class="error">❌ Error generating QR code. Please try again.</div>';
+                console.error('Error:', error);
+                resultDiv.innerHTML = '<div class="error">❌ Error: ' + error.message + '</div>';
+            } finally {
+                generateBtn.disabled = false;
             }
         }
 

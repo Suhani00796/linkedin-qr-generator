@@ -1,17 +1,20 @@
 {
-  "name": "linkedin-qr",
-  "version": "1.0.0",
-  "main": "index.js",
+  "name": "qr-generator",
+  "version": "2.0.0",
+  "description": "Generate QR codes for certificate verification with customizable favicon",
+  "main": "server.js",
   "scripts": {
+    "start": "node server.js",
+    "dev": "node server.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "keywords": [],
+  "keywords": ["qr", "code", "generator", "certificate", "verification"],
   "author": "",
   "license": "ISC",
-  "description": "",
   "dependencies": {
     "cors": "^2.8.6",
     "express": "^5.2.1",
+    "multer": "^2.1.1",
     "qrcode": "^1.5.4"
   }
 }

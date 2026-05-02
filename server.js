@@ -1,19 +1,51 @@
 const express = require('express');
 const QRCode = require('qrcode');
 const cors = require('cors');
+const multer = require('multer');
+const path = require('path');
 const app = express();
 
-app.use(cors()); // Allows your frontend to talk to the backend
+app.use(cors());
+app.use(express.json());
+// This makes the "uploads" folder public so people can see the images
+app.use('/uploads', express.static('uploads'));
 
-app.get('/generate-qr', async (req, res) => {
-    const linkedinUrl = "https://www.linkedin.com/in/sandali-snigdha-3b2723362";
+// Setup where to save uploaded certificates
+const storage = multer.diskStorage({
+    destination: './uploads/',
+    filename: (req, file, cb) => {
+        cb(null, 'cert-' + Date.now() + path.extname(file.originalname));
+    }
+});
+const upload = multer({ storage: storage });
+
+app.post('/generate-certificate-qr', upload.single('certificate'), async (req, res) => {
+    let domainName = req.body.domain.trim();
+    
+    // Add https:// if not present
+    if (!domainName.startsWith('http://') && !domainName.startsWith('https://')) {
+        domainName = 'https://' + domainName;
+    }
+    
+    const fileName = req.file.filename;
+    
+    // The link the QR code will actually open:
+    const verificationUrl = `${domainName}/verify.html?id=${fileName}`;
+    
     try {
-        // Generates the QR code as a base64 image string
-        const qrImage = await QRCode.toDataURL(linkedinUrl);
-        res.send({ qrCodeUrl: qrImage });
+        const qrImage = await QRCode.toDataURL(verificationUrl);
+        res.send({ 
+            qrCodeUrl: qrImage, 
+            verificationUrl: verificationUrl 
+        });
     } catch (err) {
-        res.status(500).send("Error generating QR code");
+        res.status(500).send("Error generating QR");
     }
 });
 
-app.listen(3000, () => console.log('Server running on http://localhost:3000'));
+const PORT = 3000;
+app.listen(PORT, () => {
+    const fs = require('fs');
+    if (!fs.existsSync('./uploads')) fs.mkdirSync('./uploads');
+    console.log(`🚀 Server running at http://localhost:${PORT}`);
+});

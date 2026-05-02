@@ -2,46 +2,291 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>My LinkedIn QR</title>
-    <!-- Added the LinkedIn Favicon below -->
-    <link rel="icon" type="image/png" href="https://cdn-icons-png.flaticon.com/512/174/174857.png">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>QR Code Generator</title>
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' fill='%232563eb'/><rect x='10' y='10' width='30' height='30' fill='%23fff'/><rect x='60' y='10' width='30' height='30' fill='%23fff'/><rect x='10' y='60' width='30' height='30' fill='%23fff'/><rect x='35' y='35' width='30' height='30' fill='%23fff' opacity='0.5'/></svg>">
     <style>
-        body { 
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
-            text-align: center; 
-            padding-top: 50px; 
-            background-color: #f3f2ef; 
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
         }
-        .card { 
-            background: white; 
-            padding: 30px; 
-            border-radius: 15px; 
-            display: inline-block; 
-            box-shadow: 0 4px 12px rgba(0,0,0,0.1); 
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
         }
-        img { 
-            border: 5px solid #0077b5; 
-            border-radius: 10px; 
-            margin-top: 20px; 
+
+        .container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            max-width: 500px;
+            width: 100%;
+            overflow: hidden;
         }
-        h2 { color: #0077b5; }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 40px 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            font-weight: 700;
+        }
+
+        .header p {
+            font-size: 0.95em;
+            opacity: 0.9;
+        }
+
+        .content {
+            padding: 40px 30px;
+        }
+
+        .form-group {
+            margin-bottom: 25px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 10px;
+            color: #333;
+            font-weight: 600;
+            font-size: 0.95em;
+        }
+
+        input[type="text"],
+        input[type="file"] {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            font-size: 0.95em;
+            transition: all 0.3s ease;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        input[type="text"]:focus,
+        input[type="file"]:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        input[type="file"] {
+            padding: 10px;
+            cursor: pointer;
+        }
+
+        input[type="file"]::file-selector-button {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            margin-right: 10px;
+        }
+
+        button {
+            width: 100%;
+            padding: 14px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 1em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.6);
+        }
+
+        button:active {
+            transform: translateY(0);
+        }
+
+        #result {
+            margin-top: 30px;
+            text-align: center;
+        }
+
+        .result-box {
+            background: #f8f9ff;
+            padding: 25px;
+            border-radius: 15px;
+            border: 2px solid #e0e0ff;
+            animation: slideIn 0.3s ease;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .result-box p {
+            color: #555;
+            margin-bottom: 15px;
+            font-size: 0.95em;
+        }
+
+        .result-box img {
+            max-width: 250px;
+            height: auto;
+            border-radius: 10px;
+            margin: 20px 0;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .result-box a {
+            display: inline-block;
+            margin-top: 15px;
+            padding: 10px 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            text-decoration: none;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+            word-break: break-all;
+            font-size: 0.9em;
+        }
+
+        .result-box a:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+        }
+
+        .error {
+            background: #fee;
+            color: #c33;
+            padding: 12px 15px;
+            border-radius: 8px;
+            border-left: 4px solid #c33;
+            margin-bottom: 15px;
+        }
+
+        .loading {
+            display: inline-block;
+            margin: 20px 0;
+        }
+
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #667eea;
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .hint {
+            font-size: 0.85em;
+            color: #999;
+            margin-top: 5px;
+        }
     </style>
 </head>
 <body>
-    <div class="card">
-        <h2>Sandali's LinkedIn QR</h2>
-        <div id="qr-container">Generating...</div>
+    <div class="container">
+        <div class="header">
+            <h1>🎯 QR Generator</h1>
+            <p>Create shareable QR codes for your domains</p>
+        </div>
+
+        <div class="content">
+            <div class="form-group">
+                <label for="domain">Domain Name</label>
+                <input type="text" id="domain" placeholder="e.g. google.com, campusweb.com, youtube.com">
+                <div class="hint">Enter just the domain name without https://</div>
+            </div>
+
+            <div class="form-group">
+                <label for="certFile">Upload Image/Certificate</label>
+                <input type="file" id="certFile" accept="image/*">
+            </div>
+
+            <button onclick="generate()">Generate QR Code</button>
+
+            <div id="result"></div>
+        </div>
     </div>
 
     <script>
-        fetch('http://localhost:3000/generate-qr')
-            .then(res => res.json())
-            .then(data => {
-                document.getElementById('qr-container').innerHTML = `<img src="${data.qrCodeUrl}" width="250">`;
-            })
-            .catch(err => {
-                document.getElementById('qr-container').innerText = "Error: Is the server running?";
-            });
+        async function generate() {
+            const domain = document.getElementById('domain').value.trim();
+            const fileInput = document.getElementById('certFile');
+            const resultDiv = document.getElementById('result');
+            
+            if (!domain) {
+                resultDiv.innerHTML = '<div class="error">❌ Please enter a domain name</div>';
+                return;
+            }
+
+            if (!fileInput.files[0]) {
+                resultDiv.innerHTML = '<div class="error">❌ Please upload an image or certificate</div>';
+                return;
+            }
+
+            resultDiv.innerHTML = '<div class="loading"><div class="spinner"></div><p>Generating QR Code...</p></div>';
+
+            const formData = new FormData();
+            formData.append('certificate', fileInput.files[0]);
+            formData.append('domain', domain);
+
+            try {
+                const response = await fetch('http://localhost:3000/generate-certificate-qr', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                if (!response.ok) throw new Error('Server error');
+
+                const data = await response.json();
+                resultDiv.innerHTML = `
+                    <div class="result-box">
+                        <p>✅ QR Code Generated Successfully!</p>
+                        <img src="${data.qrCodeUrl}" alt="Generated QR Code">
+                        <p><strong>Verification Link:</strong></p>
+                        <a href="${data.verificationUrl}" target="_blank">${data.verificationUrl}</a>
+                    </div>
+                `;
+            } catch (error) {
+                resultDiv.innerHTML = '<div class="error">❌ Error generating QR code. Please try again.</div>';
+            }
+        }
+
+        // Allow Enter key to generate QR
+        document.getElementById('domain').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') generate();
+        });
     </script>
 </body>
 </html>

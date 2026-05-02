@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>My LinkedIn QR</title>
+    <style>
+        body { font-family: sans-serif; text-align: center; margin-top: 50px; }
+        img { border: 2px solid #0077b5; padding: 10px; border-radius: 10px; }
+    </style>
+</head>
+<body>
+    <h1>Sandali's LinkedIn QR Code</h1>
+    <div id="qr-container">Loading...</div>
+
+    <script>
+        fetch('http://localhost:3000/generate-qr')
+            .then(res => res.json())
+            .then(data => {
+                document.getElementById('qr-container').innerHTML = 
+                    `<img src="${data.qrCodeUrl}" alt="LinkedIn QR">`;
+            });
+    </script>
+</body>
+</html>
